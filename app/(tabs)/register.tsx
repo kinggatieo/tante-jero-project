@@ -115,7 +115,7 @@ export default function RegisterScreen() {
 
           <TouchableOpacity
             style={styles.loginBtn}
-            onPress={() => router.replace("/index")}
+            onPress={() => router.replace("./index")}
           >
             <Text style={styles.loginText}>Already have an account? Login</Text>
           </TouchableOpacity>
