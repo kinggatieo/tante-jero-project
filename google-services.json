@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "279681146554",
+    "project_id": "tante-jero-project",
+    "storage_bucket": "tante-jero-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:279681146554:android:c1220c2eb9ed0a5e006c83",
+        "android_client_info": {
+          "package_name": "com.tantejero.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCudHRk2vvJQfH3mdDWdwlIZy8GknV9ZIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,19 +1,15 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "expo-router";
-
-const supabaseUrl = "https://YOUR_PROJECT_URL.supabase.co";
-const supabaseKey = "YOUR_ANON_KEY";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "../../lib/supabaseClient";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -39,15 +35,46 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    // 1️⃣ Sign up user
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
+      { email, password }
+    );
+
+    if (signUpError) {
+      setLoading(false);
+      Alert.alert("Registration Failed", signUpError.message);
+      return;
+    }
+
+    const userId = signUpData.user?.id;
+
+    if (!userId) {
+      setLoading(false);
+      Alert.alert("Error", "Failed to get user ID");
+      return;
+    }
+
+    // 2️⃣ Insert into your custom table "users"
+    const { error: insertError } = await supabase.from("users").insert([
+      {
+        id: userId,
+        email: email,
+        created_at: new Date(),
+      },
+    ]);
+
     setLoading(false);
 
-    if (error) {
-      Alert.alert("Registration Failed", error.message);
-    } else {
-      Alert.alert("Success", "Account created! Check your email to verify.");
-      router.replace("/login");
+    if (insertError) {
+      Alert.alert("Error", "User created but failed to save profile data.");
+      console.log(insertError);
+      return;
     }
+
+    // 3️⃣ Success
+    Alert.alert("Success", "Account created!");
+    router.replace("./index");
   };
 
   return (
@@ -57,7 +84,6 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        keyboardType="email-address"
         autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
@@ -89,7 +115,7 @@ export default function RegisterScreen() {
 
           <TouchableOpacity
             style={styles.loginBtn}
-            onPress={() => router.replace("/login")}
+            onPress={() => router.replace("/index")}
           >
             <Text style={styles.loginText}>Already have an account? Login</Text>
           </TouchableOpacity>
