@@ -23,6 +23,7 @@ export default function DailyReportScreen() {
   const [recentItem, setRecentItem] = useState<any | null>(null);
   const [recentSale, setRecentSale] = useState<any | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
   const router = useRouter();
   const { barcode } = useLocalSearchParams();
 
@@ -33,7 +34,7 @@ export default function DailyReportScreen() {
 
     const { data, error } = await supabase
       .from("sales")
-      .select("*, items(name, price_idr, barcode, category_id)")
+      .select("*, items(name, price_idr, barcode, category)")
       .gte("created_at", `${today}T00:00:00`)
       .order("created_at", { ascending: false });
 
@@ -94,7 +95,10 @@ export default function DailyReportScreen() {
           const newSale = payload.new;
           console.log("🆕 New sale detected:", newSale);
 
-          if (newSale.item_id) await fetchSaleItem(newSale.item_id);
+          if (newSale.item_id) {
+            await fetchSaleItem(newSale.item_id);
+          }
+
           await fetchReport();
         }
       )
@@ -109,13 +113,22 @@ export default function DailyReportScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>📊 Laporan Penjualan Harian</Text>
 
-      {/* 📷 Scanner Button */}
-      <TouchableOpacity
-        style={styles.scanBtn}
-        onPress={() => router.push("/scanner")}
-      >
-        <Text style={styles.scanText}>📷 Buka Pemindai Barcode</Text>
-      </TouchableOpacity>
+      {/* 🔀 Navigation Buttons */}
+      <View style={styles.navRow}>
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: "#007AFF" }]}
+          onPress={() => router.push("/scanner")}
+        >
+          <Text style={styles.navText}>📷 Scanner</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: "#34C759" }]}
+          onPress={() => router.push("/inventory")}
+        >
+          <Text style={styles.navText}>📦 Inventory</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* 🆕 Recently Scanned Item */}
       {recentItem && (
@@ -172,33 +185,54 @@ export default function DailyReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
   },
+
+  navRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  navBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  navText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
   card: {
     backgroundColor: "#f5f5f5",
     padding: 16,
     borderRadius: 8,
     marginBottom: 10,
   },
-  name: { fontSize: 18, fontWeight: "500" },
-  qty: { fontSize: 16, color: "#555" },
-  date: { fontSize: 13, color: "#888", marginTop: 4 },
-  scanBtn: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
+  name: {
+    fontSize: 18,
+    fontWeight: "500",
   },
-  scanText: {
-    color: "#fff",
+  qty: {
     fontSize: 16,
-    fontWeight: "600",
+    color: "#555",
+  },
+  date: {
+    fontSize: 13,
+    color: "#888",
+    marginTop: 4,
   },
   recentCard: {
     backgroundColor: "#e8f4ff",

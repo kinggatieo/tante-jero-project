@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons"; // ✅ for arrow icon
-import { useRouter } from "expo-router"; // ✅ import router
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -11,7 +11,7 @@ import {
 import { supabase } from "../lib/supabaseClient";
 
 export default function HomeScreen() {
-  const router = useRouter(); // ✅ initialize router
+  const router = useRouter();
   const [sales, setSales] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
 
@@ -39,9 +39,8 @@ export default function HomeScreen() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "sales" },
-        (payload) => {
-          console.log("New sale event:", payload);
-          fetchSales(); // refresh
+        () => {
+          fetchSales();
         }
       )
       .subscribe();
@@ -51,22 +50,42 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // ✅ Logout handler (optional)
+  // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/register"); // Go back to login page
+    router.replace("/register");
   };
 
   return (
     <View style={styles.container}>
-      {/* 🔙 Back / Logout Button */}
+      {/* 🔙 Logout */}
       <TouchableOpacity style={styles.backButton} onPress={handleLogout}>
         <Ionicons name="arrow-back" size={24} color="#007AFF" />
         <Text style={styles.backText}>Kembali ke Login</Text>
       </TouchableOpacity>
 
       <Text style={styles.title}>🏪 Dashboard Penjualan</Text>
-      <Text style={styles.summary}>Total Penjualan Hari Ini:</Text>
+
+      {/* 🔀 Navigation Buttons */}
+      <View style={styles.navRow}>
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: "#007AFF" }]}
+          onPress={() => router.push("/scanner")}
+        >
+          <Ionicons name="barcode-outline" size={20} color="#fff" />
+          <Text style={styles.navText}>Scanner</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: "#34C759" }]}
+          onPress={() => router.push("/inventory")}
+        >
+          <Ionicons name="cube-outline" size={20} color="#fff" />
+          <Text style={styles.navText}>Inventory</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.summary}>Total Penjualan Hari Ini</Text>
       <Text style={styles.amount}>Rp {total.toLocaleString("id-ID")}</Text>
 
       <Text style={styles.subTitle}>🧾 Transaksi Terbaru</Text>
@@ -81,9 +100,7 @@ export default function HomeScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <Text style={{ color: "#777", textAlign: "center", marginTop: 20 }}>
-            Belum ada transaksi hari ini
-          </Text>
+          <Text style={styles.empty}>Belum ada transaksi hari ini</Text>
         }
       />
     </View>
@@ -91,7 +108,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+
   backButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -103,13 +125,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+
   title: {
     fontSize: 26,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
   },
-  summary: { fontSize: 18, textAlign: "center" },
+
+  navRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 15,
+  },
+  navBtn: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  navText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 6,
+  },
+
+  summary: {
+    fontSize: 18,
+    textAlign: "center",
+  },
   amount: {
     fontSize: 28,
     fontWeight: "bold",
@@ -117,7 +165,13 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     marginVertical: 10,
   },
-  subTitle: { fontSize: 20, fontWeight: "600", marginVertical: 15 },
+
+  subTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginVertical: 15,
+  },
+
   card: {
     backgroundColor: "#f9f9f9",
     padding: 15,
@@ -126,5 +180,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
   },
-  itemName: { fontWeight: "bold", fontSize: 16 },
+  itemName: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  empty: {
+    color: "#777",
+    textAlign: "center",
+    marginTop: 20,
+  },
 });
